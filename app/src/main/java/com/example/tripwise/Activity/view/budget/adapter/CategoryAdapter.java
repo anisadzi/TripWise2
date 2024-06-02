@@ -16,15 +16,19 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHo
     private Context context;
     private List<Category> categoryList;
 
+    // Constructor
     public CategoryAdapter(Context context, List<Category> categoryList) {
         this.context = context;
         this.categoryList = categoryList;
     }
+
+    // Method to set data in the adapter
     public void setData(List<Category> categoryList) {
         this.categoryList = categoryList;
         notifyDataSetChanged();
     }
 
+    // Method to create View Holder
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -33,29 +37,35 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHo
         return new ViewHolder(binding);
     }
 
+    // Method to bind data to View Holder
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Category category = categoryList.get(position);
         holder.binding.tvCategoryName.setText(category.getName());
         holder.binding.viewColor.setTextColor(category.getColor());
 
+        // Set onClickListener for delete button
         holder.binding.ivDelete.setOnClickListener(v -> {
             removeItem(position);
         });
     }
 
+    // Method to get item count
     @Override
     public int getItemCount() {
         return categoryList.size();
     }
 
+    // Method to remove item from the list
     public void removeItem(int position) {
         categoryList.remove(position);
         notifyDataSetChanged();
 
+        // Update shared preferences after removing an item
         updateSharedPreferences();
     }
 
+    // Method to update shared preferences with the updated category list
     private void updateSharedPreferences() {
         SharedPreferences sharedPreferences = context.getSharedPreferences("category_prefs", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -65,6 +75,7 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHo
         editor.apply();
     }
 
+    // View Holder class
     static class ViewHolder extends RecyclerView.ViewHolder {
         CategoryItemBinding binding;
 

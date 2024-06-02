@@ -35,16 +35,25 @@ import com.google.firebase.database.FirebaseDatabase;
 import java.util.HashMap;
 import java.util.Map;
 
+// Fragment class for the sign-up functionality
 public class SignUpFragment extends Fragment {
 
+    // View binding for the sign-up fragment layout
     private FragmentSignUpBinding binding;
+    // Firebase authentication instance
     private FirebaseAuth auth;
+    // Google Sign-In client for handling Google authentication
     private GoogleSignInClient googleSignInClient;
+    // Request code for Google Sign-In
     private static final int RC_SIGN_IN = 9001;
+    // Shared preferences for storing user login state
     private SharedPreferences sharedPreferences;
+    // Progress bar for indicating loading state
     private ProgressBar progressBar;
+    // Firebase database reference for user data
     private DatabaseReference databaseReference;
 
+    // Method called to create and return the fragment's view hierarchy
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -54,25 +63,30 @@ public class SignUpFragment extends Fragment {
 
         progressBar = binding.progressBar;
 
+        // Configure Google Sign-In options
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.default_web_client_id))
                 .requestEmail()
                 .build();
 
+        // Initialize Google Sign-In client
         googleSignInClient = GoogleSignIn.getClient(requireActivity(), gso);
         sharedPreferences = requireActivity().getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
 
+        // Set up sign-up button click listener
         binding.signUpButton.setOnClickListener(view -> {
             if (validateInputs()) {
                 signUpWithEmail();
             }
         });
 
+        // Set up Google sign-up button click listener
         binding.signUpGoogleButton.setOnClickListener(view -> signUpWithGoogle());
 
         return binding.getRoot();
     }
 
+    // Method to validate user input fields
     private boolean validateInputs() {
         boolean valid = true;
 
@@ -121,6 +135,7 @@ public class SignUpFragment extends Fragment {
         return valid;
     }
 
+    // Method to handle sign-up with email and password
     private void signUpWithEmail() {
         String name = binding.nameTextInputEditText.getText().toString().trim();
         String email = binding.emailTextInputEditText.getText().toString().trim();
@@ -140,11 +155,13 @@ public class SignUpFragment extends Fragment {
                 });
     }
 
+    // Method to initiate Google sign-up process
     private void signUpWithGoogle() {
         Intent signInIntent = googleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
 
+    // Handle activity result for Google sign-in
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -159,6 +176,7 @@ public class SignUpFragment extends Fragment {
         }
     }
 
+    // Authenticate with Firebase using Google sign-in credentials
     private void firebaseAuthWithGoogle(GoogleSignInAccount account) {
         AuthCredential credential = GoogleAuthProvider.getCredential(account.getIdToken(), null);
 
@@ -176,6 +194,7 @@ public class SignUpFragment extends Fragment {
                 });
     }
 
+    // Save user data to Firebase database
     private void saveUserToDatabase(FirebaseUser user, String name) {
         if (user != null) {
             String uid = user.getUid();
@@ -198,13 +217,14 @@ public class SignUpFragment extends Fragment {
         }
     }
 
-
+    // Save the user's login state in shared preferences
     private void saveLoginState(boolean isLoggedIn) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean("isLogin", isLoggedIn);
         editor.apply();
     }
 
+    // Update UI after successful sign-up
     private void updateUI(FirebaseUser user) {
         if (user != null) {
             Intent intent = new Intent(getActivity(), MainActivity.class);
@@ -213,6 +233,7 @@ public class SignUpFragment extends Fragment {
         }
     }
 
+    // Clean up binding when the view is destroyed
     @Override
     public void onDestroyView() {
         super.onDestroyView();

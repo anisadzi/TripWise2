@@ -13,6 +13,7 @@ public class Budget {
     public Budget() {
     }
 
+    // Constructor to initialize Budget object with provided parameters
     public Budget(double budgetAmount, String tripName, long startDate, long endDate, String tripLocation, List<Category> categoryList) {
         this.budgetAmount = budgetAmount;
         this.tripName = tripName;
@@ -21,6 +22,8 @@ public class Budget {
         this.tripLocation = tripLocation;
         this.categoryList = categoryList;
     }
+
+    // Getters and setters for budget properties
 
     public double getBudgetAmount() {
         return budgetAmount;
@@ -54,11 +57,12 @@ public class Budget {
         this.endDate = endDate;
     }
 
-    public void setTripLocation(String tripLocation) {
-        this.tripLocation = tripLocation;
-    }
     public String getTripLocation() {
         return tripLocation;
+    }
+
+    public void setTripLocation(String tripLocation) {
+        this.tripLocation = tripLocation;
     }
 
     public List<Category> getCategoryList() {

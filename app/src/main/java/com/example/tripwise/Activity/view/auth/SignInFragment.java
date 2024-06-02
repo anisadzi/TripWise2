@@ -50,20 +50,27 @@ public class SignInFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
         binding = FragmentSignInBinding.inflate(inflater, container, false);
+        // Initialize Firebase Authentication
         auth = FirebaseAuth.getInstance();
+        // Get a reference to the users' database
         databaseReference = FirebaseDatabase.getInstance().getReference("users");
 
+        // Initialize progress bar
         progressBar = binding.progressBar;
 
+        // Configure Google sign-in
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.default_web_client_id))
                 .requestEmail()
                 .build();
-
         googleSignInClient = GoogleSignIn.getClient(requireActivity(), gso);
+
+        // Initialize SharedPreferences for saving login state
         sharedPreferences = requireActivity().getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
 
+        // Set click listeners for sign-in button, Google sign-in button, and forgot password text view
         binding.signInButton.setOnClickListener(view -> {
             if (validateInputs()) {
                 signInWithEmail();
@@ -75,6 +82,7 @@ public class SignInFragment extends Fragment {
         return binding.getRoot();
     }
 
+    // Method to validate user inputs (email and password)
     private boolean validateInputs() {
         boolean valid = true;
 
@@ -101,6 +109,7 @@ public class SignInFragment extends Fragment {
         return valid;
     }
 
+    // Method to sign in with email and password
     private void signInWithEmail() {
         String email = binding.emailTextInputEditText.getText().toString().trim();
         String password = binding.passwordTextInputEditText.getText().toString().trim();
@@ -122,6 +131,7 @@ public class SignInFragment extends Fragment {
                 });
     }
 
+    // Method to initiate Google sign-in flow
     private void signInWithGoogle() {
         Intent signInIntent = googleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
@@ -141,6 +151,7 @@ public class SignInFragment extends Fragment {
         }
     }
 
+    // Method to authenticate with Firebase using Google credentials
     private void firebaseAuthWithGoogle(GoogleSignInAccount account) {
         AuthCredential credential = GoogleAuthProvider.getCredential(account.getIdToken(), null);
 
@@ -158,13 +169,16 @@ public class SignInFragment extends Fragment {
                 });
     }
 
+    // Method to save login state
     private void saveLoginState(boolean isLoggedIn) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean("isLogin", isLoggedIn);
         editor.apply();
     }
 
+    // Method to update UI after successful sign-in
     private void updateUI(FirebaseUser user) {
+
         if (user != null) {
             Intent intent = new Intent(getActivity(), MainActivity.class);
             startActivity(intent);
@@ -172,11 +186,13 @@ public class SignInFragment extends Fragment {
         }
     }
 
+    // Method to open ForgotPasswordActivity
     private void openForgotPasswordActivity() {
         Intent intent = new Intent(getActivity(), ForgotPasswordActivity.class);
         startActivity(intent);
     }
 
+    // Method to check if the user exists in the database and save the user data
     private void checkAndSaveUserToDatabase(FirebaseUser user, String name) {
         if (user != null) {
             String uid = user.getUid();
@@ -211,6 +227,7 @@ public class SignInFragment extends Fragment {
         }
     }
 
+    // Lifecycle method called when the view is destroyed
     @Override
     public void onDestroyView() {
         super.onDestroyView();
