@@ -33,10 +33,12 @@ public class ItineraryAdapter extends RecyclerView.Adapter<ItineraryAdapter.View
     private DatabaseReference mItineraryRef;
     private String mUserId;
 
+    // Constructor to initialize the adapter
     public ItineraryAdapter(Context context, List<Itinerary> itineraryList) {
         mContext = context;
         mItineraryList = itineraryList;
 
+        // Get current user ID and setup Firebase reference to the itinerary
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser != null) {
             mUserId = currentUser.getUid();
@@ -44,7 +46,7 @@ public class ItineraryAdapter extends RecyclerView.Adapter<ItineraryAdapter.View
         }
     }
 
-
+    // Create view holder for the itinerary item
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -53,6 +55,7 @@ public class ItineraryAdapter extends RecyclerView.Adapter<ItineraryAdapter.View
         return new ViewHolder(binding);
     }
 
+    // Bind data to the view holder
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Itinerary itinerary = mItineraryList.get(position);
@@ -62,24 +65,29 @@ public class ItineraryAdapter extends RecyclerView.Adapter<ItineraryAdapter.View
         holder.binding.tvNameTrip.setText(itinerary.getName());
         holder.binding.tvLocation.setText(itinerary.getLocation());
 
+        // Click listener for editing the itinerary
         holder.binding.tvEdit.setOnClickListener(v -> {
             startEditItineraryActivity(itinerary.getStartTime(), itinerary.getEndTime(), itinerary.getDate());
         });
 
+        // Click listener for deleting the itinerary
         holder.binding.tvDelete.setOnClickListener(v -> {
             deleteItinerary(itinerary, position);
         });
 
+        // Click listener for opening location in map
         holder.itemView.setOnClickListener(v -> {
             openLocationInMap(itinerary.getLocation());
         });
     }
 
+    // Get the number of items in the list
     @Override
     public int getItemCount() {
         return mItineraryList.size();
     }
 
+    // Start the EditItineraryTrackingActivity with necessary data
     private void startEditItineraryActivity(long startTime, long endTime, String date) {
         Intent intent = new Intent(mContext, EditItineraryTrackingActivity.class);
         intent.putExtra("startTime", startTime);
@@ -88,15 +96,19 @@ public class ItineraryAdapter extends RecyclerView.Adapter<ItineraryAdapter.View
         mContext.startActivity(intent);
     }
 
+    // Delete the itinerary
     private void deleteItinerary(Itinerary itinerary, int position) {
         if (mItineraryList.isEmpty() || position < 0 || position >= mItineraryList.size()) {
             return;
         }
 
+        // Query to find the itinerary to delete
         Query query = mItineraryRef.orderByChild("startTime").equalTo(itinerary.getStartTime());
         mItineraryList.remove(position);
         notifyItemRemoved(position);
         notifyItemRangeChanged(position, mItineraryList.size());
+
+        // Event listener to delete the itinerary from Firebase
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -104,8 +116,10 @@ public class ItineraryAdapter extends RecyclerView.Adapter<ItineraryAdapter.View
                     snapshot.getRef().removeValue()
                             .addOnCompleteListener(task -> {
                                 if (task.isSuccessful()) {
-                                        Toast.makeText(mContext, "Itinerary deleted successfully", Toast.LENGTH_SHORT).show();
+                                    // Show success message if deletion is successful
+                                    Toast.makeText(mContext, "Itinerary deleted successfully", Toast.LENGTH_SHORT).show();
                                 } else {
+                                    // Show error message if deletion fails
                                     Toast.makeText(mContext, "Failed to delete itinerary", Toast.LENGTH_SHORT).show();
                                 }
                             });
@@ -114,12 +128,13 @@ public class ItineraryAdapter extends RecyclerView.Adapter<ItineraryAdapter.View
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
+                // Show error message if deletion is cancelled
                 Toast.makeText(mContext, "Failed to delete itinerary", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-
+    // Open the location in map
     private void openLocationInMap(String location) {
         Uri gmmIntentUri = Uri.parse("geo:0,0?q=" + location);
         Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
@@ -127,15 +142,17 @@ public class ItineraryAdapter extends RecyclerView.Adapter<ItineraryAdapter.View
         mContext.startActivity(mapIntent);
     }
 
+    // Update the list with new data
     public void updateList(List<Itinerary> newList) {
         mItineraryList = newList;
         notifyDataSetChanged();
     }
 
-
+    // View holder class to hold the views of the itinerary item
     public class ViewHolder extends RecyclerView.ViewHolder {
         ItineraryItemBinding binding;
 
+        // Constructor to initialize the view holder with the binding
         public ViewHolder(ItineraryItemBinding binding) {
             super(binding.getRoot());
             this.binding = binding;

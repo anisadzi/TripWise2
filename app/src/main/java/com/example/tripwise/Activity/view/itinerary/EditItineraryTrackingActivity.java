@@ -42,37 +42,50 @@ public class EditItineraryTrackingActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Set up edge-to-edge display
         EdgeToEdge.enable(this);
+
+        // Inflate the layout using view binding
         binding = ActivityEditItineraryTrackingBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        // Apply padding to accommodate system bars
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        // Set up the toolbar
         Toolbar toolbar = binding.toolbar;
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle("Edit Itinerary Tracking");
 
+        // Retrieve intent data
         Intent intent = getIntent();
         long startTime = intent.getLongExtra("startTime", 0);
         long endTime = intent.getLongExtra("endTime", 0);
         date = intent.getStringExtra("date");
         dateMilis = intent.getLongExtra("dateMilis", 0);
 
+        // Initialize Firebase components
         currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser != null) {
             String userId = currentUser.getUid();
             itineraryRef = FirebaseDatabase.getInstance().getReference("itinerary").child(userId);
         }
 
+        // Set click listeners for time pickers and update button
         binding.tcStart.setOnClickListener(v -> showTimePickerDialog(startTime, binding.tcStart));
         binding.tcEnd.setOnClickListener(v -> showTimePickerDialog(endTime, binding.tcEnd));
         binding.btnUpdate.setOnClickListener(v -> checkAndSaveItinerary());
 
+        // Retrieve itinerary data
         getItineraryData(startTime);
     }
+
+    // Method to retrieve itinerary data from Firebase
     private void getItineraryData(long startTime) {
         Query query = itineraryRef.orderByChild("startTime").equalTo(startTime);
         query.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -81,10 +94,12 @@ public class EditItineraryTrackingActivity extends AppCompatActivity {
                 if (snapshot.exists()) {
                     for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
                         if (dataSnapshot != null) {
+                            // Extract itinerary details from snapshot
                             String name = dataSnapshot.child("name").getValue(String.class);
                             String location = dataSnapshot.child("location").getValue(String.class);
                             long snapshotStartTime = dataSnapshot.child("startTime").getValue(Long.class);
                             long snapshotEndTime = dataSnapshot.child("endTime").getValue(Long.class);
+                            // Set retrieved data to UI elements
                             binding.etName.setText(name);
                             binding.etLocation.setText(location);
 
@@ -106,6 +121,7 @@ public class EditItineraryTrackingActivity extends AppCompatActivity {
         });
     }
 
+    // Method to set time to TextClock widget
     private void setTimeToTextClock(TextClock textClock, long timeInMillis) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(timeInMillis);
@@ -117,7 +133,7 @@ public class EditItineraryTrackingActivity extends AppCompatActivity {
         textClock.setFormat24Hour(time);
     }
 
-
+    // Method to show time picker dialog
     private void showTimePickerDialog(long initialTime, TextClock textClock) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(initialTime);
@@ -141,6 +157,7 @@ public class EditItineraryTrackingActivity extends AppCompatActivity {
         timePickerDialog.show();
     }
 
+    // Method to check and save itinerary details
     private void checkAndSaveItinerary() {
         String name = binding.etName.getText().toString().trim();
         String location = binding.etLocation.getText().toString().trim();
@@ -156,6 +173,7 @@ public class EditItineraryTrackingActivity extends AppCompatActivity {
         }
     }
 
+    // Method to check time selection and save itinerary details
     private void checkTimeSelectionAndSaveItinerary(String name, String location) {
         String startTime = DateFormat.format("HH:mm", startCalendar).toString();
         String endTime = DateFormat.format("HH:mm", endCalendar).toString();
@@ -178,6 +196,7 @@ public class EditItineraryTrackingActivity extends AppCompatActivity {
         });
     }
 
+    // Method to check end time and save itinerary
     private void checkEndTimeAndSaveItinerary(String name, String location, String startTime, String endTime) {
         Query query = itineraryRef.orderByChild("endTime").equalTo(endTime);
         query.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -197,6 +216,7 @@ public class EditItineraryTrackingActivity extends AppCompatActivity {
         });
     }
 
+    // Method to update itinerary details to Firebase
     private void updateItineraryToFirebase(String name, String location, String startTime, String endTime) {
         itineraryRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -209,7 +229,9 @@ public class EditItineraryTrackingActivity extends AppCompatActivity {
                         if (snapshotStartTime == startCalendar.getTimeInMillis() && snapshotEndTime == endCalendar.getTimeInMillis()) {
                             String key = dataSnapshot.getKey();
                             if (key != null) {
+                                // Create itinerary object
                                 Itinerary itinerary = new Itinerary(name, location, startCalendar.getTimeInMillis(), endCalendar.getTimeInMillis(), date, dateMilis);
+                                // Update itinerary in Firebase
                                 itineraryRef.child(key).setValue(itinerary)
                                         .addOnCompleteListener(task -> {
                                             if (task.isSuccessful()) {
@@ -234,6 +256,7 @@ public class EditItineraryTrackingActivity extends AppCompatActivity {
         });
     }
 
+    // Method to update name and location of the itinerary
     private void updateNameAndLocation(String name, String location) {
         itineraryRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -245,7 +268,9 @@ public class EditItineraryTrackingActivity extends AppCompatActivity {
 
                         String key = dataSnapshot.getKey();
                         if (key != null) {
+                            // Create itinerary object
                             Itinerary itinerary = new Itinerary(name, location, snapshotStartTime, snapshotEndTime, date, dateMilis);
+                            // Update itinerary in Firebase
                             itineraryRef.child(key).setValue(itinerary)
                                     .addOnCompleteListener(task -> {
                                         if (task.isSuccessful()) {

@@ -25,11 +25,13 @@ public class ExpenseListAdapter extends RecyclerView.Adapter<ExpenseListAdapter.
     private List<Expense> expenseList;
     private Context context;
 
+    // Constructor to initialize the adapter with data
     public ExpenseListAdapter(List<Expense> expenseList, Context context) {
         this.expenseList = expenseList;
         this.context = context;
     }
 
+    // Create new views (invoked by the layout manager)
     @NonNull
     @Override
     public ExpenseViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -37,22 +39,26 @@ public class ExpenseListAdapter extends RecyclerView.Adapter<ExpenseListAdapter.
         return new ExpenseViewHolder(binding);
     }
 
+    // Replace the contents of a view (invoked by the layout manager)
     @Override
     public void onBindViewHolder(@NonNull ExpenseViewHolder holder, int position) {
         Expense expense = expenseList.get(position);
         holder.bind(expense);
     }
 
+    // Return the size of your dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {
         return expenseList.size();
     }
 
+    // Set data to the adapter
     public void setExpenseList(List<Expense> expenseList) {
         this.expenseList = expenseList;
         notifyDataSetChanged();
     }
 
+    // ViewHolder class to hold references to the views
     class ExpenseViewHolder extends RecyclerView.ViewHolder {
 
         private ListExpenseItemBinding binding;
@@ -62,16 +68,20 @@ public class ExpenseListAdapter extends RecyclerView.Adapter<ExpenseListAdapter.
             this.binding = binding;
         }
 
+        // Bind data to the ViewHolder
         public void bind(Expense expense) {
             SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
             String date = dateFormat.format(new Date(expense.getDate()));
             binding.dateExpense.setText("Date: " + date);
             binding.amountExpense.setText(String.valueOf("Total Amount: Rp " + expense.getTotal()));
 
+            // Set up RecyclerView for category expenses
             CategoryExpenseAdapter categoryExpenseAdapter = new CategoryExpenseAdapter(context, expense.getCategoryExpenses());
             binding.rvCategoryExpense.setLayoutManager(new GridLayoutManager(context, 2));
             binding.rvCategoryExpense.setAdapter(categoryExpenseAdapter);
             binding.rvCategoryExpense.setVisibility(View.GONE);
+
+            // Toggle visibility of category expenses RecyclerView on category click
             binding.categoryExpense.setOnClickListener(v -> {
                 if (binding.rvCategoryExpense.getVisibility() == View.VISIBLE) {
                     binding.rvCategoryExpense.setVisibility(View.GONE);

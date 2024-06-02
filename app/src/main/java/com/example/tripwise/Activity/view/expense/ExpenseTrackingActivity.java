@@ -50,41 +50,52 @@ public class ExpenseTrackingActivity extends AppCompatActivity implements DatePi
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Enable edge-to-edge display
         EdgeToEdge.enable(this);
+        // Set the activity layout using ViewBinding
         binding = ActivityExpenseTrackingBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        // Apply padding to adjust for system bars
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        // Set up the toolbar
         Toolbar toolbar = binding.toolbar;
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle("Expense Tracking");
 
+        // Initialize calendar instance
         calendar = Calendar.getInstance();
 
+        // Set up RecyclerView for category selection
         binding.rvCategory.setLayoutManager(new GridLayoutManager(this, 2));
         categoryExpenseAdapter = new CategoryExpenseAdapter(this, categoryList);
         binding.rvCategory.setAdapter(categoryExpenseAdapter);
 
+        // Set up RecyclerView for displaying selected categories and their amounts
         binding.rvCategoryAmount.setLayoutManager(new LinearLayoutManager(this));
         categoryAmountExpenseAdapter = new CategoryAmountExpenseAdapter(this, categoryList, this);
         binding.rvCategoryAmount.setAdapter(categoryAmountExpenseAdapter);
 
+        // Handle click events
         binding.fabAdd.setOnClickListener(view -> openCategoryDialog());
         binding.txtDatePicker.setOnClickListener(view -> openDatePickerDialog());
-        binding.txtDatePicker.setText(formatDate(Calendar.getInstance()));
         binding.btnSave.setOnClickListener(view -> saveExpense());
+
+        // Retrieve categories from SharedPreferences
         retrieveCategoriesFromSharedPreferences();
     }
 
+    // Method to open the category selection dialog
     private void openCategoryDialog() {
         AddCategoryExpense dialogFragment = new AddCategoryExpense();
         dialogFragment.show(getSupportFragmentManager(), "addCategoryExpenseDialog");
     }
 
+    // Method to retrieve categories from SharedPreferences
     public void retrieveCategoriesFromSharedPreferences() {
         SharedPreferences sharedPreferences = getSharedPreferences("category_expense_prefs", Context.MODE_PRIVATE);
         String categoriesJson = sharedPreferences.getString("categories", "[]");
@@ -94,19 +105,23 @@ public class ExpenseTrackingActivity extends AppCompatActivity implements DatePi
         if (categoryList == null) {
             categoryList = new ArrayList<>();
         }
+        // Calculate total expense
         totalExpense = 0;
         for (CategoryExpense category : categoryList) {
             totalExpense += category.getAmount();
         }
 
+        // Update RecyclerView adapters with retrieved data
         categoryExpenseAdapter.setData(categoryList);
         categoryAmountExpenseAdapter.setData(categoryList);
         categoryAmountExpenseAdapter.notifyDataSetChanged();
         categoryExpenseAdapter.notifyDataSetChanged();
 
+        // Update total expense TextView
         binding.txtTotal.setText(String.valueOf(totalExpense));
     }
 
+    // Method to open date picker dialog
     private void openDatePickerDialog() {
         DatePickerDialog datePickerDialog = new DatePickerDialog(
                 this,
@@ -121,6 +136,7 @@ public class ExpenseTrackingActivity extends AppCompatActivity implements DatePi
     @Override
     public boolean onSupportNavigateUp() {
         onBackPressed();
+        // Delete all categories when navigating up
         deleteAllCategories();
         return true;
     }
@@ -128,21 +144,25 @@ public class ExpenseTrackingActivity extends AppCompatActivity implements DatePi
     @Override
     public void onBackPressed() {
         super.onBackPressed();
+        // Delete all categories when back button is pressed
         deleteAllCategories();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        // Refresh category list onResume
         retrieveCategoriesFromSharedPreferences();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        // Delete all categories onDestroy
         deleteAllCategories();
     }
 
+    // Method to delete all categories from SharedPreferences
     private void deleteAllCategories() {
         SharedPreferences sharedPreferences = getSharedPreferences("category_expense_prefs", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -150,6 +170,7 @@ public class ExpenseTrackingActivity extends AppCompatActivity implements DatePi
         editor.apply();
     }
 
+    // Method to format date in DD/MM/YYYY format
     @SuppressLint("DefaultLocale")
     private String formatDate(Calendar calendar) {
         return String.format("%02d/%02d/%d", calendar.get(Calendar.DAY_OF_MONTH),
@@ -158,12 +179,14 @@ public class ExpenseTrackingActivity extends AppCompatActivity implements DatePi
 
     @Override
     public void onDateSet(DatePicker datePicker, int year, int month, int dayOfMonth) {
+        // Update date TextView when a date is selected from the date picker dialog
         calendar.set(Calendar.YEAR, year);
         calendar.set(Calendar.MONTH, month);
         calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
         binding.txtDatePicker.setText(formatDate(calendar));
     }
 
+    // Method to save expense data to Firebase
     private void saveExpense(){
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser == null) {
@@ -187,12 +210,14 @@ public class ExpenseTrackingActivity extends AppCompatActivity implements DatePi
         expense.setCategoryExpenses(categoryList);
         userExpenseRef.push().setValue(expense).addOnCompleteListener(task -> {
             if (task.isSuccessful()){
+                // Show success message and navigate to MainActivity
                 Toast.makeText(this, "Expense saved successfully", Toast.LENGTH_SHORT).show();
-                deleteAllCategories();
+                deleteAllCategories(); // Delete all categories after saving
                 Intent intent = new Intent(this, MainActivity.class);
                 startActivity(intent);
                 finish();
             } else {
+                // Show error message if saving fails
                 Toast.makeText(this, "Failed to save expense", Toast.LENGTH_SHORT).show();
             }
         });
@@ -200,6 +225,7 @@ public class ExpenseTrackingActivity extends AppCompatActivity implements DatePi
 
     @Override
     public void onCategoryExpenseChanged(double totalExpense) {
+        // Update total expense when category expense changes
         this.totalExpense = totalExpense;
         binding.txtTotal.setText(String.valueOf(totalExpense));
     }

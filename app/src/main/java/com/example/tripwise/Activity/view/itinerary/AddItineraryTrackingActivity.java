@@ -42,32 +42,39 @@ public class AddItineraryTrackingActivity extends AppCompatActivity {
         binding = ActivityAddItineraryTrackingBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        // Setting padding to handle window insets
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
 
+        // Setting up the toolbar
         Toolbar toolbar = binding.toolbar;
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle("Add Itinerary Tracking");
 
+        // Initializing Firebase components
         currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser != null) {
             String userId = currentUser.getUid();
             itineraryRef = FirebaseDatabase.getInstance().getReference("itinerary").child(userId);
         }
 
+        // Initializing start and end time calendars
         startCalendar = Calendar.getInstance();
         endCalendar = Calendar.getInstance();
 
+        // Setting onClickListeners for start and end time TextClocks
         binding.tcStart.setOnClickListener(v -> showTimePickerDialog(startCalendar, binding.tcStart));
         binding.tcEnd.setOnClickListener(v -> showTimePickerDialog(endCalendar, binding.tcEnd));
 
+        // Setting onClickListener for the "Add" button
         binding.btnAdd.setOnClickListener(v -> checkAndSaveItinerary());
     }
 
+    // Method to show TimePickerDialog
     private void showTimePickerDialog(Calendar calendar, TextClock textClock) {
         int hour = calendar.get(Calendar.HOUR_OF_DAY);
         int minute = calendar.get(Calendar.MINUTE);
@@ -87,6 +94,7 @@ public class AddItineraryTrackingActivity extends AppCompatActivity {
         timePickerDialog.show();
     }
 
+    // Method to check if both start and end times are selected
     private void checkTimeSelection() {
         if (startTimeSelected && endTimeSelected) {
             String startTime = DateFormat.format("HH:mm", startCalendar).toString();
@@ -99,6 +107,7 @@ public class AddItineraryTrackingActivity extends AppCompatActivity {
         }
     }
 
+    // Method to check and save the itinerary to Firebase
     private void checkAndSaveItinerary() {
         if (!startTimeSelected || !endTimeSelected) {
             Toast.makeText(this, "Please select both start and end times", Toast.LENGTH_SHORT).show();
@@ -126,6 +135,7 @@ public class AddItineraryTrackingActivity extends AppCompatActivity {
         });
     }
 
+    // Method to check if the end time already exists in the database
     private void checkEndTimeAndSaveItinerary(String endTime) {
         Query endQuery = itineraryRef.orderByChild("endTime").equalTo(endTime);
         endQuery.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -145,6 +155,7 @@ public class AddItineraryTrackingActivity extends AppCompatActivity {
         });
     }
 
+    // Method to save the itinerary to Firebase
     private void saveItineraryToFirebase() {
         String name = binding.etName.getText().toString().trim();
         String location = binding.etLocation.getText().toString().trim();

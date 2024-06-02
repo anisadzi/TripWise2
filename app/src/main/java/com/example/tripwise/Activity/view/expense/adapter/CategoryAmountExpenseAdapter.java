@@ -15,26 +15,31 @@ import com.google.gson.Gson;
 import java.util.List;
 
 public class CategoryAmountExpenseAdapter extends RecyclerView.Adapter<CategoryAmountExpenseAdapter.ViewHolder> {
+
     private Context context;
     private List<CategoryExpense> categoryList;
     private OnCategoryExpenseChangedListener onCategoryExpenseChangedListener;
 
+    // Interface to handle changes in category expense
     public interface OnCategoryExpenseChangedListener {
         void onCategoryExpenseChanged(double totalExpense);
     }
 
+    // Constructor to initialize the adapter with data and a listener
     public CategoryAmountExpenseAdapter(Context context, List<CategoryExpense> categoryList, OnCategoryExpenseChangedListener listener) {
         this.context = context;
         this.categoryList = categoryList;
         this.onCategoryExpenseChangedListener = listener;
     }
 
+    // Method to set data to the adapter
     public void setData(List<CategoryExpense> categoryList) {
         this.categoryList = categoryList;
         notifyDataSetChanged();
         notifyTotalExpenseChanged();
     }
 
+    // Inflates the layout when creating ViewHolder
     @NonNull
     @Override
     public CategoryAmountExpenseAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -43,22 +48,26 @@ public class CategoryAmountExpenseAdapter extends RecyclerView.Adapter<CategoryA
         return new CategoryAmountExpenseAdapter.ViewHolder(binding);
     }
 
+    // Binds data to the ViewHolder
     @Override
     public void onBindViewHolder(@NonNull CategoryAmountExpenseAdapter.ViewHolder holder, int position) {
         CategoryExpense category = categoryList.get(position);
         holder.binding.tvCategoryAmount.setText(category.getAmount().toString());
         holder.binding.viewColor.setCardBackgroundColor(category.getColor());
 
+        // Listener for delete button click
         holder.binding.ivDelete.setOnClickListener(v -> {
             removeItem(position);
         });
     }
 
+    // Returns the total number of items in the list
     @Override
     public int getItemCount() {
         return categoryList.size();
     }
 
+    // Method to remove an item from the list
     public void removeItem(int position) {
         categoryList.remove(position);
         notifyDataSetChanged();
@@ -66,6 +75,7 @@ public class CategoryAmountExpenseAdapter extends RecyclerView.Adapter<CategoryA
         notifyTotalExpenseChanged();
     }
 
+    // Method to update SharedPreferences with the updated list
     private void updateSharedPreferences() {
         SharedPreferences sharedPreferences = context.getSharedPreferences("category_expense_prefs", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -75,6 +85,7 @@ public class CategoryAmountExpenseAdapter extends RecyclerView.Adapter<CategoryA
         editor.apply();
     }
 
+    // Method to notify the listener about changes in total expense
     private void notifyTotalExpenseChanged() {
         if (onCategoryExpenseChangedListener != null) {
             double totalExpense = 0;
@@ -85,6 +96,7 @@ public class CategoryAmountExpenseAdapter extends RecyclerView.Adapter<CategoryA
         }
     }
 
+    // ViewHolder class to hold references to the views
     static class ViewHolder extends RecyclerView.ViewHolder {
         CategoryAmountItemBinding binding;
 

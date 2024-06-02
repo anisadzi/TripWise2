@@ -37,6 +37,7 @@ public class AddCategoryExpense extends DialogFragment {
 
         binding = AddCategoryExpenseBinding.inflate(getLayoutInflater());
 
+        // Set up color picker dialog
         binding.btnPickColor.setOnClickListener(v -> ColorPickerDialogBuilder
                 .with(requireContext())
                 .setTitle("Choose color")
@@ -65,6 +66,7 @@ public class AddCategoryExpense extends DialogFragment {
                 .build()
                 .show());
 
+        // Save the category
         binding.btnSave.setOnClickListener(v -> {
             String categoryName = binding.etCategoryName.getText().toString().trim();
             Double categoryAmount = Double.parseDouble(binding.etCategoryAmount.getText().toString());
@@ -72,6 +74,7 @@ public class AddCategoryExpense extends DialogFragment {
             if (!categoryName.isEmpty() && !categoryAmount.equals(0.0)) {
                 int categoryColor = selectedColor;
 
+                // Save category to SharedPreferences
                 SharedPreferences sharedPreferences = requireContext().getSharedPreferences("category_expense_prefs", Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = sharedPreferences.edit();
 
@@ -85,9 +88,10 @@ public class AddCategoryExpense extends DialogFragment {
                 editor.putString("categories", updatedCategoriesJson);
                 editor.apply();
 
+                // Update category list in the activity
                 ((ExpenseTrackingActivity) requireActivity()).retrieveCategoriesFromSharedPreferences();
 
-                dismiss();
+                dismiss(); // Dismiss the dialog
             } else {
                 Toast.makeText(getActivity(), "Category name cannot be empty", Toast.LENGTH_SHORT).show();
             }
@@ -98,6 +102,7 @@ public class AddCategoryExpense extends DialogFragment {
         return builder.create();
     }
 
+    // Clean up the view binding
     @Override
     public void onDestroyView() {
         super.onDestroyView();

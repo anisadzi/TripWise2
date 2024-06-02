@@ -18,7 +18,6 @@ import androidx.core.view.WindowInsetsCompat;
 import com.example.tripwise.Activity.view.auth.AuthActivity;
 import com.example.tripwise.Activity.view.budget.BudgetActivity;
 import com.example.tripwise.Activity.view.expense.ExpenseListActivity;
-import com.example.tripwise.Activity.view.expense.ExpenseTrackingActivity;
 import com.example.tripwise.Activity.view.itinerary.ItineraryTrackingActivity;
 import com.example.tripwise.R;
 import com.example.tripwise.databinding.ActivityProfileBinding;
@@ -31,50 +30,52 @@ import com.squareup.picasso.Picasso;
 
 public class ProfileActivity extends AppCompatActivity {
 
-    private ActivityProfileBinding binding;
-    private DatabaseReference mDatabase;
-    private FirebaseAuth mAuth;
-    private FirebaseUser currentUser;
-    private SharedPreferences sharedPreferences;
+    private ActivityProfileBinding binding; // View binding for the layout
+    private DatabaseReference mDatabase; // Reference to Firebase Realtime Database
+    private FirebaseAuth mAuth; // Firebase Authentication instance
+    private FirebaseUser currentUser; // Currently authenticated user
+    private SharedPreferences sharedPreferences; // SharedPreferences for storing user data
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
+        EdgeToEdge.enable(this); // Enable edge-to-edge display
         binding = ActivityProfileBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        // Apply window insets to handle system bars
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        // Initialize Firebase Authentication and get the current user
         mAuth = FirebaseAuth.getInstance();
         currentUser = mAuth.getCurrentUser();
+
+        // Set up the toolbar
         Toolbar toolbar = binding.toolbar;
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle("Profile");
 
+        // Initialize SharedPreferences
         sharedPreferences = getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
+
+        // Set click listeners for various actions
         binding.editProfileBtn.setOnClickListener(view -> navigateToEditProfileActivity());
         binding.textLogOut.setOnClickListener(view -> showLogoutConfirmationDialog());
+        binding.textBudgetAllocate.setOnClickListener(view -> startActivity(new Intent(ProfileActivity.this, BudgetActivity.class)));
+        binding.textExpenseTracking.setOnClickListener(view -> startActivity(new Intent(ProfileActivity.this, ExpenseListActivity.class)));
+        binding.textItineraryList.setOnClickListener(view -> startActivity(new Intent(ProfileActivity.this, ItineraryTrackingActivity.class)));
 
-        binding.textBudgetAllocate.setOnClickListener(view -> {
-            Intent intent = new Intent(ProfileActivity.this, BudgetActivity.class);
-            startActivity(intent);
-        });
-        binding.textExpenseTracking.setOnClickListener(view -> {
-            Intent intent = new Intent(ProfileActivity.this, ExpenseListActivity.class);
-            startActivity(intent);
-        });
-        binding.textItineraryList.setOnClickListener(view -> {
-            Intent intent = new Intent(ProfileActivity.this, ItineraryTrackingActivity.class);
-            startActivity(intent);
-        });
-
-        getAccounbtInfo();
+        // Load the current account information
+        getAccountInfo();
     }
-    private void getAccounbtInfo(){
+
+    // Fetch the user's account information from Firebase
+    private void getAccountInfo() {
         String userId = currentUser.getUid();
         mDatabase = FirebaseDatabase.getInstance().getReference();
         mDatabase.child("users").child(userId).get().addOnCompleteListener(task -> {
@@ -86,10 +87,12 @@ public class ProfileActivity extends AppCompatActivity {
                     String email = snapshot.child("email").getValue(String.class);
                     String photoUrl = snapshot.child("photoUrl").getValue(String.class);
 
+                    // Set the retrieved information to the corresponding views
                     binding.textName.setText(name);
                     binding.textPhoneNumber.setText(phoneNumber);
                     binding.textEmail.setText(email);
 
+                    // Load the profile image using Picasso
                     if (photoUrl != null && !photoUrl.isEmpty()) {
                         Picasso.get()
                                 .load(photoUrl)
@@ -102,26 +105,20 @@ public class ProfileActivity extends AppCompatActivity {
             }
         });
     }
+
+    // Show a confirmation dialog before logging out
     private void showLogoutConfirmationDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Logout");
-        builder.setMessage("Are you sure you want to logout?");
-        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                logout();
-            }
-        });
-        builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.dismiss();
-            }
-        });
+        builder.setTitle("Logout")
+                .setMessage("Are you sure you want to logout?")
+                .setPositiveButton("Yes", (dialogInterface, i) -> logout())
+                .setNegativeButton("No", (dialogInterface, i) -> dialogInterface.dismiss());
+
         AlertDialog dialog = builder.create();
         dialog.show();
     }
 
+    // Log out the user and clear the shared preferences
     private void logout() {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean("isLogin", false);
@@ -132,10 +129,14 @@ public class ProfileActivity extends AppCompatActivity {
         startActivity(intent);
         finishAffinity();
     }
+
+    // Navigate to the EditProfileActivity
     private void navigateToEditProfileActivity() {
         Intent intent = new Intent(ProfileActivity.this, EditProfileActivity.class);
         startActivity(intent);
     }
+
+    // Handle the back navigation
     @Override
     public boolean onSupportNavigateUp() {
         onBackPressed();

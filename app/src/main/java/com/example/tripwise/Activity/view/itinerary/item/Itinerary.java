@@ -8,7 +8,10 @@ public class Itinerary {
     private String date;
     private long dateMilis;
 
+    // Empty constructor required for Firebase
     public Itinerary() {}
+
+    // Constructor with parameters to initialize the Itinerary object
     public Itinerary(String name, String location, long startTime, long endTime, String date, long dateMilis) {
         this.name = name;
         this.location = location;
@@ -18,6 +21,7 @@ public class Itinerary {
         this.dateMilis = dateMilis;
     }
 
+    // Getter and setter methods for the name property
     public String getName() {
         return name;
     }
@@ -26,6 +30,7 @@ public class Itinerary {
         this.name = name;
     }
 
+    // Getter and setter methods for the location property
     public String getLocation() {
         return location;
     }
@@ -34,6 +39,7 @@ public class Itinerary {
         this.location = location;
     }
 
+    // Getter and setter methods for the startTime property
     public long getStartTime() {
         return startTime;
     }
@@ -42,6 +48,7 @@ public class Itinerary {
         this.startTime = startTime;
     }
 
+    // Getter and setter methods for the endTime property
     public long getEndTime() {
         return endTime;
     }
@@ -50,6 +57,7 @@ public class Itinerary {
         this.endTime = endTime;
     }
 
+    // Getter and setter methods for the date property
     public String getDate() {
         return date;
     }
@@ -57,11 +65,13 @@ public class Itinerary {
     public void setDate(String date) {
         this.date = date;
     }
+
+    // Getter and setter methods for the dateMilis property
     public long getDateMilis() {
         return dateMilis;
     }
+
     public void setDateMilis(long dateMilis) {
         this.dateMilis = dateMilis;
     }
-
 }

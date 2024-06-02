@@ -30,15 +30,15 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         super.onMessageReceived(remoteMessage);
         Log.d("FCM", "Message received: " + remoteMessage.getData().toString());
 
-        // Ambil user ID dari notifikasi
+        // Get user ID from notification
         String userId = remoteMessage.getData().get("userId");
 
-        // Ambil user ID dari user yang sedang login
+        // Get current logged-in user
         FirebaseAuth mAuth = FirebaseAuth.getInstance();
         FirebaseUser currentUser = mAuth.getCurrentUser();
 
         if (currentUser != null && currentUser.getUid().equals(userId)) {
-            // Buat channel notifikasi dan tampilkan notifikasi hanya jika user ID cocok
+            // If the notification is for the current user, show it
             createNotificationChannel();
             showNotification(remoteMessage.getData().get("title"), remoteMessage.getData().get("body"));
         } else {
@@ -50,9 +50,10 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     public void onNewToken(String token) {
         super.onNewToken(token);
         Log.d("FCM", "Token: " + token);
-        // Anda dapat mengirim token ke server Anda jika diperlukan
+        // Send the token to the server if needed
     }
 
+    // Create notification channel for Android O and above
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             CharSequence name = "Upcoming Trip Channel";
@@ -66,6 +67,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         }
     }
 
+    // Show the notification
     private void showNotification(String title, String message) {
         Intent intent = new Intent(this, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -81,6 +83,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 .setContentIntent(pendingIntent);
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+        // Check and request notification permission for Android 13 (API level 33) and above
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
