@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "594529180593",
+    "project_id": "tripwise-571fe",
+    "storage_bucket": "tripwise-571fe.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:594529180593:android:0b5a75d6c504c3d87a7b90",
+        "android_client_info": {
+          "package_name": "com.example.tripwise"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "594529180593-vgcdoorpp319is30ker9c1vkkvnt46bd.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.tripwise",
+            "certificate_hash": "63cffd2eed4959cf32376a0ba811cf3a41003c77"
+          }
+        },
+        {
+          "client_id": "594529180593-qe1q4ggl3urig4henr60kvlfqt35rpil.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyANcH7UpQ3SdaShNg3Wfk03VW37sBcojj4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "594529180593-mu3i6d65aqtvhre6j1ncev5inughejmq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
